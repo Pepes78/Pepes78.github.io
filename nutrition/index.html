@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nutrición Atlética — Nico</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #0a0a0a; }
+    #root { min-height: 100vh; }
+    .back-link {
+      position: fixed; top: 14px; left: 16px; z-index: 9999;
+      font-family: 'DM Mono', 'Courier New', monospace;
+      font-size: 11px; letter-spacing: 0.1em;
+      color: #555; text-decoration: none;
+      padding: 6px 10px; border: 1px solid #222;
+      background: rgba(10,10,10,0.9); transition: all 0.2s;
+    }
+    .back-link:hover { color: #ff3d00; border-color: #ff3d00; }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="/">← INICIO</a>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+    const MACROS = { calorias: 2200, proteina: 176, carbos: 220, grasas: 73 };
+    const days = [
+      { dia: "Día 1", entreno: "PIERNAS A", tipo: "alto", descripcion: "Día de volumen alto — más carbos pre y post entreno",
+        comidas: [
+          { nombre: "Desayuno", hora: "7:00–8:00", kcal: 520, proteina: 35, carbos: 55, grasas: 14,
+            items: [{ alimento: "Avena cocida", cantidad: "80g", macro: "C" },{ alimento: "Claras de huevo", cantidad: "5 uds", macro: "P" },{ alimento: "Huevo entero", cantidad: "1 ud", macro: "PG" },{ alimento: "Plátano", cantidad: "1 mediano", macro: "C" },{ alimento: "Canela", cantidad: "al gusto", macro: "—" }],
+            nota: "Carbos para energía en el entreno de tarde" },
+          { nombre: "Almuerzo", hora: "13:00–14:00", kcal: 600, proteina: 45, carbos: 65, grasas: 12,
+            items: [{ alimento: "Pechuga de pollo o merluza", cantidad: "180g", macro: "P" },{ alimento: "Arroz blanco cocido", cantidad: "150g", macro: "C" },{ alimento: "Brócoli o judías verdes", cantidad: "200g", macro: "C" },{ alimento: "Aceite de oliva virgen", cantidad: "1 cda", macro: "G" }],
+            nota: "Comida principal — máximo carbos antes del entreno" },
+          { nombre: "Pre-entreno", hora: "17:30–18:00", kcal: 300, proteina: 25, carbos: 35, grasas: 5,
+            items: [{ alimento: "Yogur griego 0%", cantidad: "200g", macro: "P" },{ alimento: "Manzana o naranja", cantidad: "1 ud", macro: "C" },{ alimento: "Nueces", cantidad: "10g", macro: "G" }],
+            nota: "30–45 min antes del entreno. Ligero y digestivo" },
+          { nombre: "Cena / Post-entreno", hora: "21:00–21:30", kcal: 480, proteina: 45, carbos: 35, grasas: 18,
+            items: [{ alimento: "Salmón al horno o atún", cantidad: "200g", macro: "PG" },{ alimento: "Patata cocida o boniato", cantidad: "120g", macro: "C" },{ alimento: "Ensalada mixta", cantidad: "grande", macro: "C" },{ alimento: "Aceite de oliva", cantidad: "1 cda", macro: "G" },{ alimento: "Huevo duro", cantidad: "1 ud", macro: "PG" }],
+            nota: "Post-entreno — repone glucógeno y repara músculo" }
+        ]
+      },
+      { dia: "Día 2", entreno: "ESPALDA + BRAZOS A + HIIT", tipo: "alto", descripcion: "Día de HIIT — carbos moderados, proteína alta",
+        comidas: [
+          { nombre: "Desayuno", hora: "7:00–8:00", kcal: 500, proteina: 38, carbos: 45, grasas: 14,
+            items: [{ alimento: "Tortilla de claras", cantidad: "5 claras + 1 entero", macro: "P" },{ alimento: "Pan integral tostado", cantidad: "2 rebanadas", macro: "C" },{ alimento: "Aguacate", cantidad: "½ ud", macro: "G" },{ alimento: "Tomate cherry", cantidad: "100g", macro: "C" }],
+            nota: "Proteína y grasas buenas para empezar el día" },
+          { nombre: "Almuerzo", hora: "13:00–14:00", kcal: 580, proteina: 45, carbos: 55, grasas: 13,
+            items: [{ alimento: "Pavo o pechuga a la plancha", cantidad: "180g", macro: "P" },{ alimento: "Pasta integral cocida", cantidad: "120g", macro: "C" },{ alimento: "Tomate natural triturado", cantidad: "100g", macro: "C" },{ alimento: "Espinacas salteadas", cantidad: "150g", macro: "C" },{ alimento: "Aceite de oliva", cantidad: "1 cda", macro: "G" }],
+            nota: "Carbos pre-HIIT — energía para los intervalos" },
+          { nombre: "Pre-entreno", hora: "17:30–18:00", kcal: 280, proteina: 28, carbos: 28, grasas: 5,
+            items: [{ alimento: "Queso cottage o requesón", cantidad: "150g", macro: "P" },{ alimento: "Fruta del tiempo (pera/kiwi)", cantidad: "1 ud", macro: "C" }],
+            nota: "Ligero, fácil de digerir antes del HIIT" },
+          { nombre: "Cena / Post-entreno", hora: "21:00–21:30", kcal: 500, proteina: 45, carbos: 40, grasas: 16,
+            items: [{ alimento: "Merluza o dorada al horno", cantidad: "220g", macro: "PG" },{ alimento: "Arroz integral", cantidad: "100g", macro: "C" },{ alimento: "Verduras al vapor", cantidad: "200g", macro: "C" },{ alimento: "Aceite de oliva", cantidad: "1 cda", macro: "G" }],
+            nota: "Recuperación post HIIT — proteína y carbos de calidad" }
+        ]
+      },
+      { dia: "Día 3", entreno: "PIERNAS B", tipo: "alto", descripcion: "Día más intenso — máxima carga de carbos",
+        comidas: [
+          { nombre: "Desayuno", hora: "7:00–8:00", kcal: 550, proteina: 38, carbos: 60, grasas: 14,
+            items: [{ alimento: "Avena cocida", cantidad: "90g", macro: "C" },{ alimento: "Proteína en polvo (whey)", cantidad: "1 medida (30g)", macro: "P" },{ alimento: "Mantequilla de cacahuete", cantidad: "1 cda", macro: "G" },{ alimento: "Fresas o arándanos", cantidad: "100g", macro: "C" }],
+            nota: "El día de más intensidad — carga energética máxima" },
+          { nombre: "Almuerzo", hora: "13:00–14:00", kcal: 620, proteina: 48, carbos: 68, grasas: 12,
+            items: [{ alimento: "Ternera magra o pollo", cantidad: "200g", macro: "P" },{ alimento: "Patata cocida", cantidad: "200g", macro: "C" },{ alimento: "Judías verdes o brócoli", cantidad: "200g", macro: "C" },{ alimento: "Aceite de oliva", cantidad: "1 cda", macro: "G" }],
+            nota: "Máxima carga de carbos complejos — legs day exige energía" },
+          { nombre: "Pre-entreno", hora: "17:30–18:00", kcal: 290, proteina: 25, carbos: 32, grasas: 5,
+            items: [{ alimento: "Yogur griego 0%", cantidad: "200g", macro: "P" },{ alimento: "Plátano pequeño", cantidad: "1 ud", macro: "C" },{ alimento: "Almendras", cantidad: "10g", macro: "G" }],
+            nota: "Combustible rápido antes del entreno de piernas" },
+          { nombre: "Cena / Post-entreno", hora: "21:00–21:30", kcal: 480, proteina: 48, carbos: 38, grasas: 16,
+            items: [{ alimento: "Salmón a la plancha", cantidad: "200g", macro: "PG" },{ alimento: "Boniato al horno", cantidad: "130g", macro: "C" },{ alimento: "Ensalada con rúcula y tomate", cantidad: "grande", macro: "C" },{ alimento: "Aceite de oliva + limón", cantidad: "1 cda", macro: "G" }],
+            nota: "Proteína + carbos para recuperar músculo de piernas" }
+        ]
+      },
+      { dia: "Día 4", entreno: "ESPALDA + BRAZOS B + HIIT", tipo: "alto", descripcion: "Segundo HIIT — carbos moderados, hidratación clave",
+        comidas: [
+          { nombre: "Desayuno", hora: "7:00–8:00", kcal: 490, proteina: 36, carbos: 48, grasas: 14,
+            items: [{ alimento: "Huevos revueltos", cantidad: "3 enteros", macro: "PG" },{ alimento: "Pan integral", cantidad: "2 rebanadas", macro: "C" },{ alimento: "Tomate y pepino", cantidad: "al gusto", macro: "C" },{ alimento: "Aceite de oliva", cantidad: "1 cda", macro: "G" }],
+            nota: "Desayuno completo — proteína + carbos + grasas buenas" },
+          { nombre: "Almuerzo", hora: "13:00–14:00", kcal: 570, proteina: 45, carbos: 55, grasas: 13,
+            items: [{ alimento: "Pollo a la plancha", cantidad: "180g", macro: "P" },{ alimento: "Arroz blanco", cantidad: "140g", macro: "C" },{ alimento: "Pimientos y cebolla salteados", cantidad: "150g", macro: "C" },{ alimento: "Aceite de oliva", cantidad: "1 cda", macro: "G" }],
+            nota: "Almuerzo clásico — eficiente y equilibrado" },
+          { nombre: "Pre-entreno", hora: "17:30–18:00", kcal: 270, proteina: 26, carbos: 28, grasas: 5,
+            items: [{ alimento: "Atún en lata al natural", cantidad: "120g", macro: "P" },{ alimento: "Arroz cake o galleta de arroz", cantidad: "3 uds", macro: "C" }],
+            nota: "Rápido, práctico y sin digestión pesada" },
+          { nombre: "Cena / Post-entreno", hora: "21:00–21:30", kcal: 490, proteina: 46, carbos: 38, grasas: 17,
+            items: [{ alimento: "Bacalao al horno o dorada", cantidad: "220g", macro: "PG" },{ alimento: "Lentejas cocidas", cantidad: "100g", macro: "CP" },{ alimento: "Espinacas salteadas con ajo", cantidad: "150g", macro: "C" },{ alimento: "Aceite de oliva", cantidad: "1 cda", macro: "G" }],
+            nota: "Legumbres aportan hierro y proteína vegetal extra" }
+        ]
+      },
+      { dia: "Día 5", entreno: "PECHO + HOMBRO (moderado)", tipo: "moderado", descripcion: "Día suave — carbos bajos, grasas y proteína moderadas",
+        comidas: [
+          { nombre: "Desayuno", hora: "7:00–8:00", kcal: 450, proteina: 32, carbos: 35, grasas: 18,
+            items: [{ alimento: "Huevos revueltos", cantidad: "3 enteros", macro: "PG" },{ alimento: "Aguacate", cantidad: "½ ud", macro: "G" },{ alimento: "Tostada integral", cantidad: "1 rebanada", macro: "C" },{ alimento: "Café solo o infusión", cantidad: "1 taza", macro: "—" }],
+            nota: "Día moderado — menos carbos, más grasas saludables" },
+          { nombre: "Almuerzo", hora: "13:00–14:00", kcal: 540, proteina: 42, carbos: 40, grasas: 18,
+            items: [{ alimento: "Salmón a la plancha", cantidad: "180g", macro: "PG" },{ alimento: "Quinoa cocida", cantidad: "100g", macro: "CP" },{ alimento: "Ensalada verde variada", cantidad: "grande", macro: "C" },{ alimento: "Aceite de oliva + vinagre", cantidad: "1 cda", macro: "G" }],
+            nota: "Quinoa da carbos y proteína — perfecto para día moderado" },
+          { nombre: "Pre-entreno", hora: "17:30–18:00", kcal: 250, proteina: 28, carbos: 18, grasas: 7,
+            items: [{ alimento: "Queso cottage", cantidad: "150g", macro: "P" },{ alimento: "Nueces", cantidad: "15g", macro: "G" },{ alimento: "Manzana pequeña", cantidad: "½ ud", macro: "C" }],
+            nota: "Snack proteico — el entreno de hoy es de baja intensidad" },
+          { nombre: "Cena / Post-entreno", hora: "21:00–21:30", kcal: 440, proteina: 42, carbos: 22, grasas: 20,
+            items: [{ alimento: "Pechuga de pollo al horno", cantidad: "180g", macro: "P" },{ alimento: "Huevo duro", cantidad: "2 uds", macro: "PG" },{ alimento: "Ensalada con aguacate", cantidad: "grande", macro: "CG" },{ alimento: "Aceite de oliva", cantidad: "1 cda", macro: "G" }],
+            nota: "Cena baja en carbos — el entreno fue suave" }
+        ]
+      }
+    ];
+    const MACRO_COLOR = {
+      P: { bg: "#ff3d0022", border: "#ff3d00", text: "#ff6b35", label: "Proteína" },
+      C: { bg: "#00b4d822", border: "#00b4d8", text: "#48cae4", label: "Carbo" },
+      G: { bg: "#f4a26122", border: "#f4a261", text: "#f4a261", label: "Grasa" },
+      PG: { bg: "#9b5de522", border: "#9b5de5", text: "#c77dff", label: "P+G" },
+      CP: { bg: "#06d6a022", border: "#06d6a0", text: "#06d6a0", label: "C+P" },
+      CG: { bg: "#ffd16622", border: "#ffd166", text: "#ffd166", label: "C+G" },
+      "—": { bg: "#22222222", border: "#333", text: "#555", label: "—" },
+    };
+    const tipoColor = { alto: "#ff3d00", moderado: "#f4a261" };
+
+    function NutritionPlan() {
+      const [activeDay, setActiveDay] = useState(0);
+      const day = days[activeDay];
+      const totalKcal = day.comidas.reduce((s, c) => s + c.kcal, 0);
+      const totalProt = day.comidas.reduce((s, c) => s + c.proteina, 0);
+      const totalCarb = day.comidas.reduce((s, c) => s + c.carbos, 0);
+      const totalGras = day.comidas.reduce((s, c) => s + c.grasas, 0);
+      return (
+        <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Mono','Courier New',monospace", color: "#e8e8e0" }}>
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap');
+            *{box-sizing:border-box;margin:0;padding:0}
+            ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#ff3d00;border-radius:2px}
+            .day-btn{background:transparent;border:1px solid #222;color:#666;padding:8px 14px;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.05em;transition:all .2s;white-space:nowrap}
+            .day-btn:hover{border-color:#ff3d00;color:#ff3d00}
+            .day-btn.active{background:#ff3d00;border-color:#ff3d00;color:#fff}
+            .macro-bar-wrap{height:4px;background:#1a1a1a;border-radius:2px;overflow:hidden;margin-top:6px}
+            .meal-card{background:#0d0d0d;border:1px solid #1a1a1a;margin-bottom:12px}
+            .meal-header{padding:16px 20px 12px;border-bottom:1px solid #141414}
+            .food-row{display:grid;grid-template-columns:1fr 80px 60px;padding:10px 20px;border-bottom:1px solid #0f0f0f;align-items:center}
+            .food-row:last-child{border-bottom:none}
+            .macro-badge{display:inline-block;padding:2px 6px;font-size:9px;letter-spacing:.1em;border-radius:2px;border:1px solid;font-family:'DM Mono',monospace}
+          `}</style>
+          <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "56px 24px 24px" }}>
+            <div style={{ maxWidth: 800, margin: "0 auto" }}>
+              <div style={{ fontSize: 11, letterSpacing: "0.2em", color: "#ff3d00", marginBottom: 8 }}>PLAN DE ALIMENTACIÓN — 8 SEMANAS</div>
+              <h1 style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: "clamp(36px,8vw,60px)", letterSpacing: "0.05em", lineHeight: 1, color: "#f0f0e8", marginBottom: 12 }}>NUTRICIÓN ATLÉTICA</h1>
+              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 8 }}>
+                {[{label:"OBJETIVO KCAL",val:"~2,200/día",color:"#ff3d00"},{label:"PROTEÍNA",val:"176g/día",color:"#ff6b35"},{label:"CARBOS",val:"220g/día",color:"#48cae4"},{label:"GRASAS",val:"73g/día",color:"#f4a261"}].map(m=>(
+                  <div key={m.label} style={{ fontSize: 11 }}><span style={{ color: "#444" }}>{m.label}: </span><span style={{ color: m.color }}>{m.val}</span></div>
+                ))}
+              </div>
+              <div style={{ fontSize: 10, color: "#333", marginBottom: 20 }}>Déficit ~500 kcal sobre TDEE estimado · 4 comidas diarias · Adaptado a cada tipo de entreno</div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {days.map((d, i) => (
+                  <button key={i} className={`day-btn ${activeDay===i?"active":""}`} onClick={() => setActiveDay(i)}>
+                    {d.dia}: {d.entreno.split(" ")[0]} {d.entreno.split(" ")[1]||""}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div style={{ maxWidth: 800, margin: "0 auto", padding: "24px" }}>
+            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderLeft: `3px solid ${tipoColor[day.tipo]}`, padding: "20px 24px", marginBottom: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: tipoColor[day.tipo], letterSpacing: "0.15em", marginBottom: 4 }}>{day.dia} — {day.entreno}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 28, letterSpacing: "0.08em", color: "#f0f0e8", marginBottom: 6 }}>{day.descripcion}</div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontSize: 10, color: "#444", marginBottom: 4 }}>TOTAL DÍA</div>
+                  <div style={{ fontSize: 24, fontFamily: "'Bebas Neue',sans-serif", color: tipoColor[day.tipo] }}>{totalKcal} kcal</div>
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 16 }}>
+                {[{label:"PROTEÍNA",val:totalProt,unit:"g",color:"#ff3d00",max:MACROS.proteina},{label:"CARBOS",val:totalCarb,unit:"g",color:"#48cae4",max:MACROS.carbos},{label:"GRASAS",val:totalGras,unit:"g",color:"#f4a261",max:MACROS.grasas}].map(m=>(
+                  <div key={m.label} style={{ background: "#0a0a0a", padding: "12px", border: "1px solid #1a1a1a" }}>
+                    <div style={{ fontSize: 9, color: "#444", letterSpacing: "0.15em", marginBottom: 4 }}>{m.label}</div>
+                    <div style={{ fontSize: 22, fontFamily: "'Bebas Neue',sans-serif", color: m.color }}>{m.val}<span style={{ fontSize: 12, color: "#555" }}>{m.unit}</span></div>
+                    <div className="macro-bar-wrap"><div style={{ height: "100%", width: `${Math.min(100,(m.val/m.max)*100)}%`, background: m.color, borderRadius: 2, transition: "width .5s" }} /></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {day.comidas.map((comida, ci) => (
+              <div key={ci} className="meal-card">
+                <div className="meal-header">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                    <div>
+                      <span style={{ fontSize: 10, color: "#555", letterSpacing: "0.1em", marginRight: 10 }}>{comida.hora}</span>
+                      <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 22, letterSpacing: "0.08em", color: "#f0f0e8" }}>{comida.nombre}</span>
+                    </div>
+                    <div style={{ display: "flex", gap: 12 }}>
+                      {[{val:comida.proteina,unit:"g P",color:"#ff6b35"},{val:comida.carbos,unit:"g C",color:"#48cae4"},{val:comida.grasas,unit:"g G",color:"#f4a261"},{val:comida.kcal,unit:"kcal",color:"#e8e8e0"}].map(m=>(
+                        <div key={m.unit} style={{ fontSize: 12, color: m.color }}>
+                          <span style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 16 }}>{m.val}</span>
+                          <span style={{ fontSize: 10, color: "#555", marginLeft: 2 }}>{m.unit}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {comida.nota && <div style={{ marginTop: 8, fontSize: 10, color: "#555", letterSpacing: "0.04em" }}>↳ {comida.nota}</div>}
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 80px 60px", padding: "6px 20px", fontSize: 9, letterSpacing: "0.15em", color: "#333", borderBottom: "1px solid #111" }}>
+                  <div>ALIMENTO</div><div style={{ textAlign: "center" }}>CANTIDAD</div><div style={{ textAlign: "center" }}>MACRO</div>
+                </div>
+                {comida.items.map((item, ii) => {
+                  const mc = MACRO_COLOR[item.macro] || MACRO_COLOR["—"];
+                  return (
+                    <div key={ii} className="food-row">
+                      <div style={{ fontSize: 13, color: "#e8e8e0" }}>{item.alimento}</div>
+                      <div style={{ fontSize: 12, color: "#888", textAlign: "center" }}>{item.cantidad}</div>
+                      <div style={{ textAlign: "center" }}><span className="macro-badge" style={{ background: mc.bg, borderColor: mc.border, color: mc.text }}>{mc.label}</span></div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+            <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", padding: "20px", marginTop: 8 }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.2em", color: "#ff3d00", marginBottom: 14 }}>REGLAS GENERALES</div>
+              {["Bebe 3L de agua mínimo — más en días de HIIT","El alcohol bloquea la oxidación de grasa directamente — evítalo en días de entreno","Si tienes hambre entre comidas: infusión o 1 puñado de nueces","La proteína es innegociable — 176g/día mínimo para preservar músculo en déficit","Pesa los alimentos las primeras 2 semanas para calibrar las cantidades visualmente"].map((n,i)=>(
+                <div key={i} style={{ fontSize: 11, color: "#888", marginBottom: 8, paddingLeft: 10, borderLeft: "1px solid #222", lineHeight: 1.5 }}>{n}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<NutritionPlan />);
+  </script>
+</body>
+</html>
