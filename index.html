@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nico — Personal Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0a;
+      --surface: #0d0d0d;
+      --border: #1a1a1a;
+      --border-2: #222;
+      --accent: #ff3d00;
+      --accent-2: #ff6b35;
+      --text: #f0f0e8;
+      --text-2: #888;
+      --text-muted: #444;
+    }
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', 'Courier New', monospace;
+      min-height: 100vh;
+    }
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+    /* ── LAYOUT ── */
+    .page { max-width: 900px; margin: 0 auto; padding: 60px 24px 80px; }
+
+    /* ── HEADER ── */
+    .hero { margin-bottom: 72px; }
+    .hero-label {
+      font-size: 10px; letter-spacing: 0.25em; color: var(--accent);
+      text-transform: uppercase; margin-bottom: 16px;
+    }
+    .hero-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(56px, 12vw, 100px);
+      letter-spacing: 0.04em;
+      line-height: 0.9;
+      color: var(--text);
+      margin-bottom: 20px;
+    }
+    .hero-name span { color: var(--accent); }
+    .hero-desc {
+      font-size: 12px; color: var(--text-muted);
+      letter-spacing: 0.05em; line-height: 1.8;
+      border-left: 2px solid var(--border-2);
+      padding-left: 16px; max-width: 480px;
+    }
+
+    /* ── DIVIDER ── */
+    .section-label {
+      font-size: 9px; letter-spacing: 0.25em; color: var(--text-muted);
+      text-transform: uppercase; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── CARDS GRID ── */
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 48px; }
+
+    .card {
+      display: block; text-decoration: none; color: inherit;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 24px;
+      transition: border-color 0.2s, transform 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--card-color, var(--accent));
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .card:hover { border-color: var(--card-color, var(--accent)); transform: translateY(-2px); }
+    .card:hover::before { opacity: 1; }
+
+    .card-num {
+      font-size: 9px; letter-spacing: 0.2em; color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    .card-icon { font-size: 28px; margin-bottom: 12px; display: block; }
+    .card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px; letter-spacing: 0.06em;
+      color: var(--text); margin-bottom: 8px; line-height: 1;
+    }
+    .card-sub {
+      font-size: 10px; color: var(--text-muted);
+      letter-spacing: 0.05em; line-height: 1.6;
+    }
+    .card-arrow {
+      position: absolute; bottom: 20px; right: 20px;
+      font-size: 16px; color: var(--border-2);
+      transition: color 0.2s, transform 0.2s;
+    }
+    .card:hover .card-arrow { color: var(--card-color, var(--accent)); transform: translate(2px, -2px); }
+
+    .card-tag {
+      display: inline-block; margin-top: 10px;
+      font-size: 9px; letter-spacing: 0.12em; padding: 2px 8px;
+      border: 1px solid; border-radius: 2px;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      font-size: 10px; color: var(--text-muted);
+      letter-spacing: 0.08em; padding-top: 32px;
+      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .footer-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); display: inline-block;
+      margin-right: 6px; box-shadow: 0 0 8px var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+    }
+
+    @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+    @media (max-width: 400px) { .hero-name { font-size: 52px; } }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-label">Personal Hub · v1.0</div>
+      <div class="hero-name">NICO<br><span>SEGU</span></div>
+      <p class="hero-desc">
+        Espacio personal donde viven mis herramientas de entrenamiento,
+        nutrición y productividad diaria. Todo en un mismo lugar.
+      </p>
+    </div>
+
+    <!-- Tools -->
+    <div class="section-label">HERRAMIENTAS</div>
+    <div class="cards">
+
+      <a class="card" href="/nutrition/" style="--card-color: #ff3d00;">
+        <div class="card-num">01</div>
+        <span class="card-icon">🥗</span>
+        <div class="card-title">NUTRICIÓN ATLÉTICA</div>
+        <div class="card-sub">Plan de alimentación de 8 semanas · 5 días · ~2,200 kcal/día</div>
+        <div class="card-tag" style="color:#ff3d00;border-color:#ff3d0044;">
+          PLAN 8 SEMANAS
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a class="card" href="/training/" style="--card-color: #ff6b35;">
+        <div class="card-num">02</div>
+        <span class="card-icon">💪</span>
+        <div class="card-title">ATHLETIC RECOMP</div>
+        <div class="card-sub">Plan de entrenamiento de 8 semanas · Fuerza + HIIT · Registro de pesos</div>
+        <div class="card-tag" style="color:#ff6b35;border-color:#ff6b3544;">
+          FUERZA + CARDIO
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+      <a class="card" href="/dashboard/" style="--card-color: #00e5a3;">
+        <div class="card-num">03</div>
+        <span class="card-icon">📊</span>
+        <div class="card-title">MI DASHBOARD</div>
+        <div class="card-sub">Hábitos diarios · Lista de la compra · Suscripciones y gastos</div>
+        <div class="card-tag" style="color:#00e5a3;border-color:#00e5a344;">
+          PRODUCTIVIDAD
+        </div>
+        <div class="card-arrow">↗</div>
+      </a>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div><span class="footer-dot"></span>pepes78.github.io</div>
+      <div style="color: #333;">Actualizado · 2026</div>
+    </div>
+
+  </div>
+</body>
+</html>
