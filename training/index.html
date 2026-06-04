@@ -24,10 +24,55 @@
 <body>
   <a class="back-link" href="/">← INICIO</a>
   <div id="root"></div>
+
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect, useRef } = React;
+
+    // ── SUPABASE CONFIG ──────────────────────────────────────
+    const SB_URL = 'https://holnmbwrojwqldxuwrpm.supabase.co/rest/v1';
+    const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvbG5tYndyb2p3cWxkeHV3cnBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NDY4MjgsImV4cCI6MjA5NjEyMjgyOH0.Ut_Z1ixsj2AprFvUSMTRxnhZFbfVs6T1WvN393zjJE8';
+    const SB_H  = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+
+    async function sbLoad() {
+      try {
+        const r = await fetch(`${SB_URL}/weights?select=key,value`, { headers: SB_H });
+        if (!r.ok) return null;
+        const rows = await r.json();
+        // Reconstruct nested: { "d0-e1": { "0": "80", "1": "82.5" } }
+        const map = {};
+        rows.forEach(({ key, value }) => {
+          const m = key.match(/^(d\d+-e\d+)-w(\d+)$/);
+          if (m) {
+            if (!map[m[1]]) map[m[1]] = {};
+            map[m[1]][m[2]] = value;
+          }
+        });
+        return map;
+      } catch { return null; }
+    }
+
+    async function sbSave(exKey, weekIdx, value) {
+      const key = `${exKey}-w${weekIdx}`;
+      try {
+        await fetch(`${SB_URL}/weights`, {
+          method: 'POST',
+          headers: { ...SB_H, 'Prefer': 'resolution=merge-duplicates' },
+          body: JSON.stringify({ key, value: String(value), updated_at: new Date().toISOString() })
+        });
+      } catch { /* fail silently */ }
+    }
+
+    async function sbDelete(exKey, weekIdx) {
+      const key = `${exKey}-w${weekIdx}`;
+      try {
+        await fetch(`${SB_URL}/weights?key=eq.${encodeURIComponent(key)}`, {
+          method: 'DELETE', headers: SB_H
+        });
+      } catch { /* fail silently */ }
+    }
+
+    // ── PLAN DATA ────────────────────────────────────────────
     const plan = {
-      meta: { name: "Nico — Plan de Entrenamiento", objetivo: "Reducir grasa, definir cintura, fuerza atlética", perfil: "28 años · 1.87m · 88kg · Oficina + entreno tarde", duracion: "8 semanas" },
       days: [
         { dia: "Día 1", nombre: "PIERNAS A", foco: "Cuádriceps + Glúteos", intensidad: "🔥🔥🔥🔥", cardio: null,
           ejercicios: [
@@ -101,6 +146,7 @@
         "Semanas 7-8: Evaluar progreso y ajustar cardio HIIT a 3x/semana si rodilla lo permite"
       ]
     };
+
     const WEEKS = ["S1","S2","S3","S4","S5","S6","S7","S8"];
 
     function TrainingPlan() {
@@ -109,10 +155,61 @@
       const [weights, setWeights] = useState({});
       const [activeWeek, setActiveWeek] = useState(0);
       const [expandedEx, setExpandedEx] = useState(null);
-      const toggleCheck = (key, e) => { e.stopPropagation(); setChecked(prev => ({ ...prev, [key]: !prev[key] })); };
-      const handleWeight = (exKey, week, val) => { setWeights(prev => ({ ...prev, [exKey]: { ...(prev[exKey]||{}), [week]: val } })); };
-      const toggleExpand = (key) => { setExpandedEx(prev => prev === key ? null : key); };
+      const [syncStatus, setSyncStatus] = useState('loading'); // loading | online | offline
+      const debounceRef = useRef({});
+
+      // Load weights on mount: localStorage first (instant), then Supabase (sync)
+      useEffect(() => {
+        const local = JSON.parse(localStorage.getItem('weights_sb') || '{}');
+        if (Object.keys(local).length) setWeights(local);
+
+        sbLoad().then(sbData => {
+          if (sbData === null) {
+            setSyncStatus('offline');
+          } else {
+            // Supabase data wins on conflict
+            const merged = { ...local, ...sbData };
+            setWeights(merged);
+            localStorage.setItem('weights_sb', JSON.stringify(merged));
+            setSyncStatus('online');
+          }
+        });
+      }, []);
+
+      const handleWeight = (exKey, weekIdx, val) => {
+        const newWeights = {
+          ...weights,
+          [exKey]: { ...(weights[exKey] || {}), [weekIdx]: val }
+        };
+        setWeights(newWeights);
+        localStorage.setItem('weights_sb', JSON.stringify(newWeights));
+
+        // Debounced Supabase save
+        const debounceKey = `${exKey}-w${weekIdx}`;
+        clearTimeout(debounceRef.current[debounceKey]);
+        debounceRef.current[debounceKey] = setTimeout(() => {
+          if (val) {
+            sbSave(exKey, weekIdx, val).then(() => setSyncStatus('online')).catch(() => setSyncStatus('offline'));
+          } else {
+            sbDelete(exKey, weekIdx);
+          }
+        }, 700);
+      };
+
+      const toggleCheck = (key, e) => {
+        e.stopPropagation();
+        setChecked(prev => ({ ...prev, [key]: !prev[key] }));
+      };
+      const toggleExpand = key => setExpandedEx(prev => prev === key ? null : key);
+
       const day = plan.days[activeDay];
+
+      const syncDot = {
+        loading: { color: '#444', title: 'Cargando pesos...', label: '●' },
+        online:  { color: '#00e5a3', title: 'Sincronizado con Supabase', label: '●' },
+        offline: { color: '#ff4757', title: 'Sin conexión — datos guardados localmente', label: '●' },
+      }[syncStatus];
+
       return (
         <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Mono','Courier New',monospace", color: "#e8e8e0" }}>
           <style>{`
@@ -141,9 +238,17 @@
             .col-header{display:grid;grid-template-columns:28px 1fr 60px 70px 55px 28px;padding:8px 16px;font-size:9px;letter-spacing:.15em;color:#333;border-bottom:1px solid #1a1a1a}
             @media(max-width:540px){.ex-row{grid-template-columns:28px 1fr 55px 65px 0px 28px}.col-header{grid-template-columns:28px 1fr 55px 65px 0px 28px}.hide-mobile{display:none}.weight-panel{grid-template-columns:repeat(4,1fr)}}
           `}</style>
+
+          {/* Header */}
           <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "56px 24px 24px" }}>
             <div style={{ maxWidth: 860, margin: "0 auto" }}>
-              <div style={{ fontSize: 11, letterSpacing: "0.2em", color: "#ff3d00", marginBottom: 8 }}>PLAN DE ENTRENAMIENTO — 8 SEMANAS</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.2em", color: "#ff3d00" }}>PLAN DE ENTRENAMIENTO — 8 SEMANAS</div>
+                <div title={syncDot.title} style={{ fontSize: 10, color: syncDot.color, letterSpacing: "0.1em", display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ fontSize: 8 }}>{syncDot.label}</span>
+                  <span style={{ color: "#444" }}>{syncStatus === 'loading' ? 'cargando' : syncStatus === 'online' ? 'sincronizado' : 'sin conexión'}</span>
+                </div>
+              </div>
               <h1 style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: "clamp(36px,8vw,64px)", letterSpacing: "0.05em", lineHeight: 1, color: "#f0f0e8", marginBottom: 12 }}>ATHLETIC RECOMP</h1>
               <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 20 }}>
                 {[{label:"EDAD",val:"28 años"},{label:"TALLA",val:"1.87m"},{label:"PESO",val:"88 kg"},{label:"OBJETIVO",val:"Reducir grasa · Fuerza atlética"}].map(m=>(
@@ -159,7 +264,11 @@
               </div>
             </div>
           </div>
+
+          {/* Content */}
           <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px" }}>
+
+            {/* Day header */}
             <div style={{ background: "#111", border: "1px solid #1a1a1a", borderLeft: "3px solid #ff3d00", padding: "20px 24px", marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
                 <div>
@@ -177,6 +286,8 @@
                 </div>
               )}
             </div>
+
+            {/* Week selector */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
               <span style={{ fontSize: 10, color: "#444", letterSpacing: "0.1em", marginRight: 4 }}>SEMANA ACTIVA:</span>
               {WEEKS.map((w, i) => (
@@ -184,6 +295,8 @@
               ))}
               <span style={{ fontSize: 10, color: "#333", marginLeft: 8 }}>← toca ▶ en cada ejercicio para registrar pesos</span>
             </div>
+
+            {/* Column headers */}
             <div className="col-header">
               <div></div><div>EJERCICIO</div>
               <div style={{ textAlign: "center" }}>SERIES</div>
@@ -191,23 +304,26 @@
               <div className="hide-mobile" style={{ textAlign: "center" }}>PAUSA</div>
               <div></div>
             </div>
+
+            {/* Exercises */}
             <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", marginBottom: 24 }}>
               {day.ejercicios.map((ex, i) => {
                 const checkKey = `${activeDay}-${i}`;
-                const exKey = `d${activeDay}-e${i}`;
-                const done = checked[checkKey];
-                const isOpen = expandedEx === exKey;
+                const exKey    = `d${activeDay}-e${i}`;
+                const done     = checked[checkKey];
+                const isOpen   = expandedEx === exKey;
                 const currentWeight = weights[exKey]?.[activeWeek] || "";
+
                 return (
                   <div key={i}>
                     <div className={`ex-row ${done?"done":""}`} onClick={() => toggleExpand(exKey)}>
-                      <div className={`check-box ${done?"checked":""}`} onClick={(e) => toggleCheck(checkKey, e)}>
+                      <div className={`check-box ${done?"checked":""}`} onClick={e => toggleCheck(checkKey, e)}>
                         {done && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                       </div>
                       <div>
                         <div style={{ fontSize: 13, color: done?"#555":"#e8e8e0", marginBottom: 2 }}>
                           {ex.nombre}
-                          {currentWeight && <span style={{ marginLeft: 8, fontSize: 10, color: "#ff3d00", fontWeight: 500 }}>· {currentWeight} kg</span>}
+                          {currentWeight && <span style={{ marginLeft: 8, fontSize: 10, color: "#ff3d00" }}>· {currentWeight} kg</span>}
                         </div>
                         {ex.nota && <div style={{ fontSize: 10, color: "#444", letterSpacing: "0.04em" }}>↳ {ex.nota}</div>}
                       </div>
@@ -216,15 +332,20 @@
                       <div className="hide-mobile" style={{ fontSize: 11, color: "#555", textAlign: "center" }}>{ex.descanso}</div>
                       <div className={`expand-btn ${isOpen?"open":""}`}>▶</div>
                     </div>
+
                     {isOpen && (
                       <div className="weight-panel">
                         {WEEKS.map((w, wi) => (
                           <div key={wi} className="weight-cell">
                             <div className="weight-label">{w}</div>
-                            <input className="weight-input" type="number" placeholder="—"
-                              value={weights[exKey]?.[wi]||""}
-                              onChange={(e) => handleWeight(exKey, wi, e.target.value)}
-                              onClick={(e) => e.stopPropagation()} />
+                            <input
+                              className="weight-input"
+                              type="number"
+                              placeholder="—"
+                              value={weights[exKey]?.[wi] || ""}
+                              onChange={e => handleWeight(exKey, wi, e.target.value)}
+                              onClick={e => e.stopPropagation()}
+                            />
                           </div>
                         ))}
                       </div>
@@ -233,6 +354,8 @@
                 );
               })}
             </div>
+
+            {/* Nutrition + Progression */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
               <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", padding: "20px" }}>
                 <div style={{ fontSize: 10, letterSpacing: "0.2em", color: "#ff3d00", marginBottom: 14 }}>NUTRICIÓN</div>
@@ -247,10 +370,12 @@
                 ))}
               </div>
             </div>
+
           </div>
         </div>
       );
     }
+
     ReactDOM.createRoot(document.getElementById('root')).render(<TrainingPlan />);
   </script>
 </body>
