@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Dashboard — Nico</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg:#06080f;--surface:#0b0e1a;--surface-2:#0f1222;--border:#131828;--border-2:#1c2238;
+  --accent:#00e5a3;--accent-dark:#00b87d;--accent-dim:rgba(0,229,163,0.08);--accent-glow:rgba(0,229,163,0.22);
+  --text:#dde4f0;--text-2:#8896b0;--text-muted:#3d4e68;
+  --green:#00e5a3;--green-dim:rgba(0,229,163,0.1);--red:#ff4757;--red-dim:rgba(255,71,87,0.1);
+  --yellow:#ffa502;--yellow-dim:rgba(255,165,2,0.1);--blue:#3d9eff;--blue-dim:rgba(61,158,255,0.1);
+  --orange:#ff9f43;--orange-dim:rgba(255,159,67,0.1);--shadow:0 4px 24px rgba(0,0,0,0.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;font-size:13px;line-height:1.5;padding:16px;min-height:100vh}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--surface)}::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:4px}
+
+.back-link{position:fixed;top:14px;left:16px;z-index:9999;font-family:'DM Mono','Courier New',monospace;font-size:11px;letter-spacing:.1em;color:#555;text-decoration:none;padding:6px 10px;border:1px solid #222;background:rgba(6,8,15,0.9);transition:all .2s}
+.back-link:hover{color:var(--accent);border-color:var(--accent)}
+
+.header{background:linear-gradient(135deg,#040811 0%,#080d1e 50%,#060f1a 100%);border:1px solid var(--border-2);border-radius:16px;padding:20px 26px 20px 100px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.header::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.5}
+.header::after{content:'';position:absolute;top:-80px;right:-80px;width:240px;height:240px;background:radial-gradient(circle,var(--accent-dim) 0%,transparent 70%);pointer-events:none}
+.logo{font-size:9px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+.greeting{font-size:21px;font-weight:700;color:var(--text)}
+.header-stat{font-size:11px;color:var(--text-muted);margin-top:3px}
+.date-main{font-size:17px;font-weight:700;text-align:right;color:var(--text)}
+.date-sub{font-size:11px;color:var(--text-muted);text-align:right;margin-top:2px;letter-spacing:.06em}
+
+.row{display:grid;gap:12px;margin-bottom:12px}
+.row-top{grid-template-columns:1.5fr 1fr 1fr}
+.row-bottom{grid-template-columns:1fr 1.5fr 1fr}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:11px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.04),transparent)}
+
+.card-header{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-title{font-size:9px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.6)}
+.ext-link{font-size:10px;color:var(--accent);text-decoration:none;font-weight:700;opacity:.55;transition:opacity .15s;letter-spacing:.02em}
+.ext-link:hover{opacity:1}
+
+.badge{font-size:10px;font-weight:700;padding:2px 9px;border-radius:99px;background:var(--accent-dim);color:var(--accent);border:1px solid rgba(0,229,163,.18)}
+
+.input-row{display:flex;gap:6px}
+.input{flex:1;background:var(--surface-2);border:1px solid var(--border-2);border-radius:8px;padding:7px 10px;color:var(--text);font-size:12px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s;min-width:0}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.input::placeholder{color:var(--text-muted)}
+select.input{cursor:pointer}
+select.input option{background:#0b0e1a;color:var(--text)}
+
+.btn{background:var(--accent);color:#04060c;border:none;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:16px;font-weight:900;transition:all .15s;flex-shrink:0;line-height:1}
+.btn:hover{background:var(--accent-dark);box-shadow:0 0 12px var(--accent-glow)}
+.btn-ghost{font-size:10px;color:var(--text-muted);background:none;border:1px solid var(--border-2);cursor:pointer;padding:3px 8px;border-radius:6px;font-family:inherit;transition:all .1s}
+.btn-ghost:hover{color:var(--text);border-color:var(--text-muted)}
+
+.progress-wrap{height:3px;background:var(--border-2);border-radius:99px;overflow:hidden;margin-top:2px}
+.progress-fill{height:100%;border-radius:99px;width:0%;background:linear-gradient(90deg,var(--accent),#00ffcc);transition:width .5s cubic-bezier(.4,0,.2,1);box-shadow:0 0 10px var(--accent-glow)}
+
+.habit-list{display:flex;flex-direction:column}
+.habit-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.habit-row:last-child{border-bottom:none}
+.habit-left{display:flex;align-items:center;gap:10px}
+.habit-icon{font-size:17px;width:22px;text-align:center}
+.habit-name{font-size:13px;font-weight:600;color:var(--text)}
+.habit-streak{font-size:10px;color:var(--yellow);font-weight:700;margin-top:1px}
+.habit-btns{display:flex;gap:5px}
+.hbtn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border-2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--surface-2);transition:all .15s;color:var(--text-muted);font-weight:700}
+.hbtn:hover{border-color:var(--accent);color:var(--accent)}
+.hbtn.done{background:var(--green-dim);border-color:var(--green);color:var(--green);box-shadow:0 0 8px rgba(0,229,163,.2)}
+.hbtn.missed{background:var(--red-dim);border-color:var(--red);color:var(--red)}
+
+.task-list{display:flex;flex-direction:column;overflow-y:auto;max-height:220px}
+.task-row{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+.task-row:last-child{border-bottom:none}
+.task-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.dot-pending{background:var(--text-muted)}
+.task-name{font-size:12px;color:var(--text-2);display:block;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.task-name:hover{color:var(--accent)}
+.tbadge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;flex-shrink:0}
+.tb-pending{background:var(--surface-2);color:var(--text-muted);border:1px solid var(--border-2)}
+
+.check-list{display:flex;flex-direction:column;overflow-y:auto;max-height:190px}
+.check-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)}
+.check-row:last-child{border-bottom:none}
+.check-box{width:15px;height:15px;cursor:pointer;accent-color:var(--accent);flex-shrink:0}
+.check-label{font-size:12px;color:var(--text-2);flex:1}
+.check-row.done .check-label{text-decoration:line-through;color:var(--text-muted)}
+.del-btn{background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:15px;padding:0 2px;opacity:0;transition:opacity .1s,color .1s;line-height:1}
+.check-row:hover .del-btn{opacity:1}
+.del-btn:hover{color:var(--red)}
+
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{font-size:10px;padding:3px 9px;border-radius:6px;cursor:pointer;border:1px solid var(--border-2);background:transparent;color:var(--text-muted);font-weight:700;font-family:inherit;transition:all .15s;letter-spacing:.03em}
+.tab:hover{color:var(--text);border-color:var(--text-muted)}
+.tab.active{background:var(--accent);border-color:var(--accent);color:#04060c}
+.doc-list{display:flex;flex-direction:column;overflow-y:auto;max-height:220px}
+
+.sub-list{display:flex;flex-direction:column;overflow-y:auto;max-height:210px}
+.sub-card{padding:10px 22px 10px 0;border-bottom:1px solid var(--border);position:relative}
+.sub-card:last-child{border-bottom:none}
+.sub-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.sub-name{font-size:13px;font-weight:700;color:var(--text)}
+.sub-amount{font-size:15px;font-weight:800;color:var(--accent);line-height:1}
+.sub-amount-label{font-size:10px;color:var(--text-muted);text-align:right}
+.sub-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:5px;gap:8px}
+.period-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px}
+.pb-1{background:var(--green-dim);color:var(--green)}.pb-3{background:var(--blue-dim);color:var(--blue)}.pb-6{background:var(--orange-dim);color:var(--orange)}.pb-12{background:var(--red-dim);color:var(--red)}
+.sub-next{font-size:11px;font-weight:600}
+.sub-next.urgent{color:var(--red)}.sub-next.soon{color:var(--yellow)}.sub-next.ok{color:var(--accent)}
+.sub-del{position:absolute;right:0;top:12px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:15px;opacity:0;transition:opacity .1s,color .1s;line-height:1}
+.sub-card:hover .sub-del{opacity:1}
+.sub-del:hover{color:var(--red)}
+.sub-total{border-top:1px solid var(--border-2);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:12px}
+.sub-total-label{color:var(--text-muted)}
+.sub-total-val{font-weight:800;font-size:14px;color:var(--accent)}
+.sub-form{display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.sub-form-r{display:flex;gap:5px}
+
+.loading-state,.empty-state{text-align:center;padding:18px 0;font-size:12px;color:var(--text-muted)}
+.loading-state::after{content:'.';animation:dots 1.2s steps(3,end) infinite}
+@keyframes dots{0%,100%{content:'.'}33%{content:'..'}66%{content:'...'}}
+
+.cowork-only{text-align:center;padding:20px 12px;font-size:11px;color:var(--text-muted);border:1px dashed var(--border-2);border-radius:8px;line-height:1.8}
+.cowork-only a{color:var(--accent);text-decoration:none}
+.cowork-only a:hover{text-decoration:underline}
+
+@media(max-width:860px){.row-top,.row-bottom{grid-template-columns:1fr 1fr}}
+@media(max-width:540px){.row-top,.row-bottom{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<a class="back-link" href="/">← INICIO</a>
+
+<div class="header">
+  <div>
+    <div class="logo">◆ Mi Dashboard</div>
+    <div class="greeting" id="greeting"></div>
+    <div class="header-stat" id="headerStat"></div>
+  </div>
+  <div>
+    <div class="date-main" id="dateMain"></div>
+    <div class="date-sub" id="dateSub"></div>
+  </div>
+</div>
+
+<div class="row row-top">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">💪 Hábitos de hoy</span>
+      <span class="badge" id="habitsBadge">0 / 5</span>
+    </div>
+    <div class="habit-list" id="habitList"></div>
+    <div class="progress-wrap"><div class="progress-fill" id="progressBar"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📋 Trabajo</span>
+    </div>
+    <div class="task-list" id="workList">
+      <div class="cowork-only">
+        Disponible en <a href="https://claude.ai" target="_blank">Cowork</a><br>
+        <span style="font-size:10px;opacity:.6">Se conecta con Notion en tiempo real</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🏠 Tareas del hogar</span>
+      <button class="btn-ghost" onclick="clearDoneHome()">Limpiar ✓</button>
+    </div>
+    <div class="input-row">
+      <input id="homeInput" class="input" placeholder="Nueva tarea..." />
+      <button class="btn" onclick="addHomeTask()">+</button>
+    </div>
+    <div class="check-list" id="homeList"></div>
+  </div>
+</div>
+
+<div class="row row-bottom">
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">🛒 Lista de la compra</span>
+      <button class="btn-ghost" onclick="clearDoneShop()">Limpiar ✓</button>
+    </div>
+    <div class="input-row">
+      <input id="shopInput" class="input" placeholder="Añadir producto..." />
+      <button class="btn" onclick="addShopItem()">+</button>
+    </div>
+    <div class="check-list" id="shopList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📁 Documentos</span>
+    </div>
+    <div class="doc-list" id="docList">
+      <div class="cowork-only">
+        Disponible en <a href="https://claude.ai" target="_blank">Cowork</a><br>
+        <span style="font-size:10px;opacity:.6">Se conecta con Google Drive en tiempo real</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">💳 Suscripciones</span>
+      <span class="badge" id="subBadge">0 €/mes</span>
+    </div>
+    <div class="sub-list" id="subList"></div>
+    <div class="sub-form">
+      <div class="sub-form-r">
+        <input id="subName" class="input" placeholder="Nombre de la suscripción" />
+        <select id="subPeriod" class="input" style="flex:0 0 108px">
+          <option value="1">Mensual</option>
+          <option value="3">Trimestral</option>
+          <option value="6">Semestral</option>
+          <option value="12">Anual</option>
+        </select>
+      </div>
+      <div class="sub-form-r">
+        <input id="subDay" class="input" placeholder="Día de cobro (1-31)" type="number" min="1" max="31"/>
+        <input id="subAmt" class="input" placeholder="Precio en €" type="number" step="0.01" min="0"/>
+        <button class="btn" onclick="addSub()">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TODAY     = new Date().toISOString().split('T')[0];
+const YESTERDAY = (() => { const d=new Date(); d.setDate(d.getDate()-1); return d.toISOString().split('T')[0]; })();
+const ls    = (k,d) => { try { const v=localStorage.getItem(k); return v!==null?JSON.parse(v):d; } catch{return d;} };
+const lsSave = (k,v) => { try{localStorage.setItem(k,JSON.stringify(v));}catch{} };
+const uid   = () => Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+const mths  = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+// HEADER
+function initHeader() {
+  const now=new Date(), h=now.getHours();
+  const g = h<12?'☀️ Buenos días':h<20?'🌤️ Buenas tardes':'🌙 Buenas noches';
+  document.getElementById('greeting').textContent = `${g}, Nico`;
+  const days=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  document.getElementById('dateMain').textContent = `${days[now.getDay()]} ${now.getDate()} ${mths[now.getMonth()]}`;
+  document.getElementById('dateSub').textContent  = String(now.getFullYear());
+}
+function updateStat() {
+  const states=ls(`habits_${TODAY}`,{}), done=HABITS.filter(h=>states[h.id]===true).length;
+  document.getElementById('headerStat').textContent =
+    done===HABITS.length ? '✨ ¡Todos los hábitos de hoy completados!'
+                         : `${done}/${HABITS.length} hábitos completados hoy`;
+}
+
+// HABITS
+const HABITS = [
+  {id:'ejercicio',name:'Ejercicio',icon:'💪'},
+  {id:'lectura',name:'Lectura',icon:'📚'},
+  {id:'alimentacion',name:'Alimentación',icon:'🥗'},
+  {id:'meditacion',name:'Meditación',icon:'🧘'},
+  {id:'redes',name:'Sin redes',icon:'📵'},
+];
+function renderHabits() {
+  const states=ls(`habits_${TODAY}`,{}), streaks=ls('habit_streaks',{});
+  const done=HABITS.filter(h=>states[h.id]===true).length;
+  document.getElementById('habitsBadge').textContent = `${done} / ${HABITS.length}`;
+  document.getElementById('progressBar').style.width  = (done/HABITS.length*100)+'%';
+  document.getElementById('habitList').innerHTML = HABITS.map(h => {
+    const s=states[h.id], st=streaks[h.id]||0;
+    return `<div class="habit-row">
+      <div class="habit-left">
+        <span class="habit-icon">${h.icon}</span>
+        <div>
+          <div class="habit-name">${h.name}</div>
+          ${st>0?`<div class="habit-streak">🔥 ${st} día${st!==1?'s':''}</div>`:''}
+        </div>
+      </div>
+      <div class="habit-btns">
+        <button class="hbtn${s===true?' done':''}" onclick="setHabit('${h.id}',true)">✔</button>
+        <button class="hbtn${s===false?' missed':''}" onclick="setHabit('${h.id}',false)">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+  updateStat();
+}
+function setHabit(id,val) {
+  const states=ls(`habits_${TODAY}`,{}), streaks=ls('habit_streaks',{});
+  if(states[id]===val){delete states[id];lsSave(`habits_${TODAY}`,states);renderHabits();return;}
+  states[id]=val; lsSave(`habits_${TODAY}`,states);
+  if(val===true){
+    const y=ls(`habits_${YESTERDAY}`,{});
+    streaks[id]=y[id]===true?(streaks[id]||0)+1:1;
+    lsSave('habit_streaks',streaks);
+  }
+  renderHabits();
+}
+
+// HOME TASKS (localStorage only in this version)
+const getHomeTasks = () => ls('home_tasks_v4',[]);
+function renderHomeTasks() {
+  const tasks=getHomeTasks(), el=document.getElementById('homeList');
+  if(!tasks.length){el.innerHTML='<div class="empty-state">Sin tareas pendientes 🎉</div>';return;}
+  el.innerHTML=tasks.map(t=>`
+    <div class="check-row${t.done?' done':''}">
+      <input type="checkbox" class="check-box" ${t.done?'checked':''} onchange="toggleHome('${t.id}')">
+      <span class="check-label">${t.text}</span>
+      <button class="del-btn" onclick="delHome('${t.id}')">×</button>
+    </div>`).join('');
+}
+function addHomeTask() {
+  const inp=document.getElementById('homeInput'), text=inp.value.trim();
+  if(!text)return;
+  const task={id:uid(),text,done:false};
+  const tasks=getHomeTasks(); tasks.unshift(task); lsSave('home_tasks_v4',tasks);
+  inp.value=''; renderHomeTasks();
+}
+function toggleHome(id) {
+  const tasks=getHomeTasks(), t=tasks.find(x=>x.id===id);
+  if(!t)return; t.done=!t.done; lsSave('home_tasks_v4',tasks); renderHomeTasks();
+}
+function delHome(id) {
+  lsSave('home_tasks_v4',getHomeTasks().filter(x=>x.id!==id)); renderHomeTasks();
+}
+function clearDoneHome(){lsSave('home_tasks_v4',getHomeTasks().filter(x=>!x.done));renderHomeTasks();}
+document.getElementById('homeInput').addEventListener('keypress',e=>{if(e.key==='Enter')addHomeTask();});
+
+// SHOPPING (localStorage)
+const getShop = () => ls('shop_v4',[]);
+function renderShop(){
+  const items=getShop(), el=document.getElementById('shopList');
+  if(!items.length){el.innerHTML='<div class="empty-state">Lista vacía</div>';return;}
+  el.innerHTML=items.map(i=>`
+    <div class="check-row${i.checked?' done':''}">
+      <input type="checkbox" class="check-box" ${i.checked?'checked':''} onchange="toggleShop('${i.id}')">
+      <span class="check-label">${i.text}</span>
+      <button class="del-btn" onclick="delShop('${i.id}')">×</button>
+    </div>`).join('');
+}
+function addShopItem(){
+  const inp=document.getElementById('shopInput'), text=inp.value.trim();
+  if(!text)return; const items=getShop(); items.push({id:uid(),text,checked:false});
+  lsSave('shop_v4',items); inp.value=''; renderShop();
+}
+function toggleShop(id){const i=getShop();const x=i.find(y=>y.id===id);if(x)x.checked=!x.checked;lsSave('shop_v4',i);renderShop();}
+function delShop(id){lsSave('shop_v4',getShop().filter(x=>x.id!==id));renderShop();}
+function clearDoneShop(){lsSave('shop_v4',getShop().filter(x=>!x.checked));renderShop();}
+document.getElementById('shopInput').addEventListener('keypress',e=>{if(e.key==='Enter')addShopItem();});
+
+// SUBSCRIPTIONS (localStorage)
+const PLABEL={1:'Mensual',3:'Trimestral',6:'Semestral',12:'Anual'};
+const PCLASS={1:'pb-1',3:'pb-3',6:'pb-6',12:'pb-12'};
+const PUNIT={1:'/mes',3:'/trim.',6:'/sem.',12:'/año'};
+function nextBilling(billingDay, pm) {
+  const today=new Date(); today.setHours(0,0,0,0);
+  for(let i=0;i<=14;i++){
+    const d=new Date(); d.setDate(1); d.setMonth(d.getMonth()+i);
+    const m=d.getMonth();
+    if(pm>1 && m%pm!==0)continue;
+    const dim=new Date(d.getFullYear(),m+1,0).getDate();
+    const day=Math.min(billingDay,dim);
+    const cand=new Date(d.getFullYear(),m,day); cand.setHours(0,0,0,0);
+    if(cand>=today)return cand;
+  }
+  return null;
+}
+function daysLabel(date){
+  const today=new Date(); today.setHours(0,0,0,0);
+  const diff=Math.round((date-today)/86400000);
+  if(diff===0)return{txt:'¡Hoy!',cls:'urgent'};
+  if(diff===1)return{txt:'Mañana',cls:'urgent'};
+  if(diff<=14)return{txt:`En ${diff} días`,cls:'soon'};
+  return{txt:`En ${diff} días`,cls:'ok'};
+}
+const getSubs = () => ls('subs_v4',[]);
+function renderSubs(){
+  const subs=getSubs();
+  const totalM=subs.reduce((a,s)=>a+(parseFloat(s.amount)||0)/(parseInt(s.pm)||1),0);
+  document.getElementById('subBadge').textContent=`${totalM.toFixed(2)} €/mes`;
+  const el=document.getElementById('subList');
+  if(!subs.length){el.innerHTML='<div class="empty-state">Añade tus suscripciones</div>';return;}
+  el.innerHTML=subs.map(s=>{
+    const pm=parseInt(s.pm)||1, bd=parseInt(s.billingDay)||1;
+    const nextD=nextBilling(bd,pm);
+    const {txt,cls}=nextD?daysLabel(nextD):{txt:'–',cls:'ok'};
+    const nextFmt=nextD?`${nextD.getDate()} ${mths[nextD.getMonth()]}`:'–';
+    return `<div class="sub-card">
+      <div class="sub-top">
+        <div><div class="sub-name">${s.name}</div></div>
+        <div style="text-align:right">
+          <div class="sub-amount">${parseFloat(s.amount).toFixed(2)} €</div>
+          <div class="sub-amount-label">${PUNIT[pm]}</div>
+        </div>
+      </div>
+      <div class="sub-bottom">
+        <span class="period-badge ${PCLASS[pm]}">${PLABEL[pm]} · día ${bd}</span>
+        <span class="sub-next ${cls}">↻ ${nextFmt} · ${txt}</span>
+      </div>
+      <button class="sub-del" onclick="delSub('${s.id}')">×</button>
+    </div>`;
+  }).join('')+`<div class="sub-total">
+    <span class="sub-total-label">Equiv. mensual total</span>
+    <span class="sub-total-val">${totalM.toFixed(2)} €</span>
+  </div>`;
+}
+function addSub(){
+  const name=document.getElementById('subName').value.trim();
+  const amount=parseFloat(document.getElementById('subAmt').value)||0;
+  const day=parseInt(document.getElementById('subDay').value)||1;
+  const pm=parseInt(document.getElementById('subPeriod').value)||1;
+  if(!name){document.getElementById('subName').focus();return;}
+  const sub={id:uid(),name,amount,billingDay:day,pm};
+  const subs=getSubs(); subs.push(sub); lsSave('subs_v4',subs);
+  ['subName','subAmt','subDay'].forEach(id=>document.getElementById(id).value='');
+  renderSubs();
+}
+function delSub(id){ lsSave('subs_v4',getSubs().filter(x=>x.id!==id)); renderSubs(); }
+document.getElementById('subName').addEventListener('keypress',e=>{if(e.key==='Enter')addSub();});
+
+// INIT
+initHeader();
+renderHabits();
+renderHomeTasks();
+renderShop();
+renderSubs();
+</script>
+</body>
+</html>
