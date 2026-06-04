@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Athletic Recomp — Nico</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    html, body { margin: 0; padding: 0; background: #0a0a0a; }
+    #root { min-height: 100vh; }
+    .back-link {
+      position: fixed; top: 14px; left: 16px; z-index: 9999;
+      font-family: 'DM Mono', 'Courier New', monospace;
+      font-size: 11px; letter-spacing: 0.1em;
+      color: #555; text-decoration: none;
+      padding: 6px 10px; border: 1px solid #222;
+      background: rgba(10,10,10,0.9); transition: all 0.2s;
+    }
+    .back-link:hover { color: #ff3d00; border-color: #ff3d00; }
+  </style>
+</head>
+<body>
+  <a class="back-link" href="/">← INICIO</a>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+    const plan = {
+      meta: { name: "Nico — Plan de Entrenamiento", objetivo: "Reducir grasa, definir cintura, fuerza atlética", perfil: "28 años · 1.87m · 88kg · Oficina + entreno tarde", duracion: "8 semanas" },
+      days: [
+        { dia: "Día 1", nombre: "PIERNAS A", foco: "Cuádriceps + Glúteos", intensidad: "🔥🔥🔥🔥", cardio: null,
+          ejercicios: [
+            { nombre: "Sentadilla en máquina / Leg Press", series: 4, reps: "12-15", descanso: "60s", nota: "Carga alta, controla bajada" },
+            { nombre: "Prensa de piernas", series: 4, reps: "15", descanso: "60s", nota: "Rango completo de movimiento" },
+            { nombre: "Extensiones de cuádriceps", series: 3, reps: "15-20", descanso: "45s", nota: "Finisher quemante" },
+            { nombre: "Zancadas con mancuernas", series: 3, reps: "12 cada pierna", descanso: "60s", nota: "Carga moderada, equilibrio" },
+            { nombre: "Elevación de talones (gemelos)", series: 4, reps: "20", descanso: "30s", nota: "" },
+            { nombre: "Plancha abdominal", series: 3, reps: "45-60s", descanso: "30s", nota: "Core activado todo el tiempo" }
+          ]
+        },
+        { dia: "Día 2", nombre: "ESPALDA + BRAZOS A", foco: "Espalda ancha + Bíceps + Tríceps", intensidad: "🔥🔥🔥🔥",
+          cardio: "HIIT Bicicleta — 10 intervalos (30s máximo / 30s descanso)",
+          ejercicios: [
+            { nombre: "Jalón al pecho (polea alta)", series: 4, reps: "12-15", descanso: "60s", nota: "Escápulas abajo, codos hacia cadera" },
+            { nombre: "Remo con mancuerna", series: 4, reps: "12 cada lado", descanso: "60s", nota: "Codo pegado al cuerpo" },
+            { nombre: "Remo en máquina / cable", series: 3, reps: "15", descanso: "45s", nota: "" },
+            { nombre: "Curl de bíceps con barra", series: 4, reps: "12-15", descanso: "60s", nota: "Sin balanceo de espalda" },
+            { nombre: "Curl martillo con mancuernas", series: 3, reps: "12", descanso: "45s", nota: "" },
+            { nombre: "Extensión de tríceps en polea", series: 4, reps: "15", descanso: "45s", nota: "Codos fijos" },
+            { nombre: "Fondos en banco (tríceps)", series: 3, reps: "15-20", descanso: "45s", nota: "" }
+          ]
+        },
+        { dia: "Día 3", nombre: "PIERNAS B", foco: "Isquiotibiales + Glúteos + Core", intensidad: "🔥🔥🔥🔥🔥", cardio: null,
+          ejercicios: [
+            { nombre: "Peso muerto rumano con mancuernas", series: 4, reps: "12", descanso: "60s", nota: "Espalda neutra, estiramiento isquio" },
+            { nombre: "Flexiones de rodilla (curl femoral)", series: 4, reps: "15", descanso: "45s", nota: "Contracción máxima arriba" },
+            { nombre: "Hip Thrust con barra o mancuerna", series: 4, reps: "15", descanso: "60s", nota: "Glúteo en la cima, no lumbar" },
+            { nombre: "Abductores en máquina", series: 3, reps: "20", descanso: "30s", nota: "" },
+            { nombre: "Sentadilla sumo con mancuerna", series: 3, reps: "15", descanso: "60s", nota: "Pies abiertos, talones adentro" },
+            { nombre: "Crunch en polea / abdominal en máquina", series: 4, reps: "20", descanso: "30s", nota: "Core definido" },
+            { nombre: "Elevación de piernas colgado", series: 3, reps: "15", descanso: "30s", nota: "Lento y controlado" }
+          ]
+        },
+        { dia: "Día 4", nombre: "ESPALDA + BRAZOS B", foco: "Espalda grosor + Bíceps + Tríceps", intensidad: "🔥🔥🔥🔥",
+          cardio: "HIIT Bicicleta — 10 intervalos (30s máximo / 30s descanso)",
+          ejercicios: [
+            { nombre: "Dominadas asistidas o jalón neutro", series: 4, reps: "10-12", descanso: "60s", nota: "Agarre neutro, menos hombro" },
+            { nombre: "Remo en polea baja agarre amplio", series: 4, reps: "15", descanso: "60s", nota: "" },
+            { nombre: "Pull-over con mancuerna", series: 3, reps: "15", descanso: "45s", nota: "Expande caja torácica" },
+            { nombre: "Curl concentrado con mancuerna", series: 3, reps: "12 cada brazo", descanso: "45s", nota: "Pico de bíceps" },
+            { nombre: "Curl en polea baja (cable)", series: 3, reps: "15", descanso: "30s", nota: "Tensión constante" },
+            { nombre: "Press francés con mancuerna", series: 3, reps: "12", descanso: "60s", nota: "Sin dolor de hombro — codos arriba" },
+            { nombre: "Extensión tríceps sobre cabeza en polea", series: 3, reps: "15", descanso: "45s", nota: "" }
+          ]
+        },
+        { dia: "Día 5", nombre: "PECHO + HOMBRO (moderado)", foco: "Recuperación activa — Volumen ligero", intensidad: "🔥🔥",
+          cardio: "Cardio suave — 20 min bicicleta ritmo constante zona 2",
+          ejercicios: [
+            { nombre: "Press de pecho en máquina", series: 3, reps: "20-25", descanso: "60s", nota: "40-50% del peso habitual — sin dolor" },
+            { nombre: "Aperturas con mancuernas (pecho)", series: 3, reps: "20", descanso: "45s", nota: "Peso muy ligero, rango completo" },
+            { nombre: "Cruce de poleas (cable crossover)", series: 3, reps: "20", descanso: "45s", nota: "Contracción en el centro" },
+            { nombre: "Elevaciones laterales muy ligeras", series: 3, reps: "20", descanso: "30s", nota: "Solo si no duele el hombro" },
+            { nombre: "Face pull en polea (hombro posterior)", series: 3, reps: "20", descanso: "30s", nota: "Protege el manguito rotador" },
+            { nombre: "Rotación externa con banda / polea", series: 3, reps: "15", descanso: "30s", nota: "Rehabilitación hombro" }
+          ]
+        }
+      ],
+      nutricion: [
+        "Déficit de ~500 kcal/día sobre tu TDEE (estimado ~2,700 kcal para tu perfil)",
+        "Proteína: 2g por kg de peso → 176g/día mínimo",
+        "Carbohidratos mayormente pre y post entrenamiento",
+        "Grasas saludables: aguacate, nueces, aceite de oliva",
+        "Hidratación: 3L de agua/día mínimo",
+        "Alcohol: limitar al máximo — bloquea quema de grasa directamente"
+      ],
+      progresion: [
+        "Semanas 1-2: Adaptar el cuerpo, no forzar pesos máximos",
+        "Semanas 3-4: Aumentar carga un 5-10% si las reps se sienten fáciles",
+        "Semanas 5-6: Introducir superseries en brazos para más intensidad",
+        "Semanas 7-8: Evaluar progreso y ajustar cardio HIIT a 3x/semana si rodilla lo permite"
+      ]
+    };
+    const WEEKS = ["S1","S2","S3","S4","S5","S6","S7","S8"];
+
+    function TrainingPlan() {
+      const [activeDay, setActiveDay] = useState(0);
+      const [checked, setChecked] = useState({});
+      const [weights, setWeights] = useState({});
+      const [activeWeek, setActiveWeek] = useState(0);
+      const [expandedEx, setExpandedEx] = useState(null);
+      const toggleCheck = (key, e) => { e.stopPropagation(); setChecked(prev => ({ ...prev, [key]: !prev[key] })); };
+      const handleWeight = (exKey, week, val) => { setWeights(prev => ({ ...prev, [exKey]: { ...(prev[exKey]||{}), [week]: val } })); };
+      const toggleExpand = (key) => { setExpandedEx(prev => prev === key ? null : key); };
+      const day = plan.days[activeDay];
+      return (
+        <div style={{ minHeight: "100vh", background: "#0a0a0a", fontFamily: "'DM Mono','Courier New',monospace", color: "#e8e8e0" }}>
+          <style>{`
+            @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Bebas+Neue&display=swap');
+            *{box-sizing:border-box;margin:0;padding:0}
+            ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#ff3d00;border-radius:2px}
+            .day-btn{background:transparent;border:1px solid #222;color:#666;padding:8px 14px;cursor:pointer;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.05em;transition:all .2s;white-space:nowrap}
+            .day-btn:hover{border-color:#ff3d00;color:#ff3d00}
+            .day-btn.active{background:#ff3d00;border-color:#ff3d00;color:#fff}
+            .week-btn{background:transparent;border:1px solid #1a1a1a;color:#555;padding:4px 10px;cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;transition:all .15s}
+            .week-btn:hover{border-color:#ff3d00;color:#ff3d00}
+            .week-btn.active{background:#ff3d0022;border-color:#ff3d00;color:#ff3d00}
+            .ex-row{display:grid;grid-template-columns:28px 1fr 60px 70px 55px 28px;align-items:center;padding:12px 16px;border-bottom:1px solid #141414;transition:background .15s;cursor:pointer}
+            .ex-row:hover{background:#111}
+            .ex-row.done{opacity:.35}
+            .check-box{width:18px;height:18px;border:1px solid #333;border-radius:3px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0;cursor:pointer}
+            .check-box.checked{background:#ff3d00;border-color:#ff3d00}
+            .weight-panel{background:#0d0d0d;border-top:1px solid #1a1a1a;padding:14px 16px 14px 44px;display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+            .weight-cell{display:flex;flex-direction:column;align-items:center;gap:4px}
+            .weight-label{font-size:9px;color:#444;letter-spacing:.1em}
+            .weight-input{width:100%;background:#111;border:1px solid #222;color:#e8e8e0;font-family:'DM Mono',monospace;font-size:12px;text-align:center;padding:5px 2px;outline:none;transition:border-color .15s;border-radius:2px}
+            .weight-input:focus{border-color:#ff3d00}
+            .weight-input::placeholder{color:#333}
+            .expand-btn{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:#333;transition:all .2s;flex-shrink:0;font-size:14px}
+            .expand-btn.open{color:#ff3d00;transform:rotate(90deg)}
+            .col-header{display:grid;grid-template-columns:28px 1fr 60px 70px 55px 28px;padding:8px 16px;font-size:9px;letter-spacing:.15em;color:#333;border-bottom:1px solid #1a1a1a}
+            @media(max-width:540px){.ex-row{grid-template-columns:28px 1fr 55px 65px 0px 28px}.col-header{grid-template-columns:28px 1fr 55px 65px 0px 28px}.hide-mobile{display:none}.weight-panel{grid-template-columns:repeat(4,1fr)}}
+          `}</style>
+          <div style={{ background: "#0d0d0d", borderBottom: "1px solid #1a1a1a", padding: "56px 24px 24px" }}>
+            <div style={{ maxWidth: 860, margin: "0 auto" }}>
+              <div style={{ fontSize: 11, letterSpacing: "0.2em", color: "#ff3d00", marginBottom: 8 }}>PLAN DE ENTRENAMIENTO — 8 SEMANAS</div>
+              <h1 style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: "clamp(36px,8vw,64px)", letterSpacing: "0.05em", lineHeight: 1, color: "#f0f0e8", marginBottom: 12 }}>ATHLETIC RECOMP</h1>
+              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: 20 }}>
+                {[{label:"EDAD",val:"28 años"},{label:"TALLA",val:"1.87m"},{label:"PESO",val:"88 kg"},{label:"OBJETIVO",val:"Reducir grasa · Fuerza atlética"}].map(m=>(
+                  <div key={m.label} style={{ fontSize: 11, color: "#555" }}><span style={{ color: "#333" }}>{m.label}: </span><span style={{ color: "#e8e8e0" }}>{m.val}</span></div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {plan.days.map((d, i) => (
+                  <button key={i} className={`day-btn ${activeDay===i?"active":""}`} onClick={() => { setActiveDay(i); setExpandedEx(null); }}>
+                    {d.dia}: {d.nombre}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div style={{ maxWidth: 860, margin: "0 auto", padding: "24px" }}>
+            <div style={{ background: "#111", border: "1px solid #1a1a1a", borderLeft: "3px solid #ff3d00", padding: "20px 24px", marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, color: "#ff3d00", letterSpacing: "0.15em", marginBottom: 4 }}>{day.dia} — {day.foco}</div>
+                  <div style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: 32, letterSpacing: "0.08em", color: "#f0f0e8" }}>{day.nombre}</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 11, color: "#555", marginBottom: 4 }}>INTENSIDAD</div>
+                  <div style={{ fontSize: 20 }}>{day.intensidad}</div>
+                </div>
+              </div>
+              {day.cardio && (
+                <div style={{ marginTop: 16, padding: "10px 14px", background: "#0a0a0a", border: "1px solid #ff3d0033", borderRadius: 4, fontSize: 12, color: "#ff6b35" }}>
+                  <span style={{ color: "#555", marginRight: 8 }}>CARDIO:</span>{day.cardio}
+                </div>
+              )}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 10, color: "#444", letterSpacing: "0.1em", marginRight: 4 }}>SEMANA ACTIVA:</span>
+              {WEEKS.map((w, i) => (
+                <button key={i} className={`week-btn ${activeWeek===i?"active":""}`} onClick={() => setActiveWeek(i)}>{w}</button>
+              ))}
+              <span style={{ fontSize: 10, color: "#333", marginLeft: 8 }}>← toca ▶ en cada ejercicio para registrar pesos</span>
+            </div>
+            <div className="col-header">
+              <div></div><div>EJERCICIO</div>
+              <div style={{ textAlign: "center" }}>SERIES</div>
+              <div style={{ textAlign: "center" }}>REPS</div>
+              <div className="hide-mobile" style={{ textAlign: "center" }}>PAUSA</div>
+              <div></div>
+            </div>
+            <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", marginBottom: 24 }}>
+              {day.ejercicios.map((ex, i) => {
+                const checkKey = `${activeDay}-${i}`;
+                const exKey = `d${activeDay}-e${i}`;
+                const done = checked[checkKey];
+                const isOpen = expandedEx === exKey;
+                const currentWeight = weights[exKey]?.[activeWeek] || "";
+                return (
+                  <div key={i}>
+                    <div className={`ex-row ${done?"done":""}`} onClick={() => toggleExpand(exKey)}>
+                      <div className={`check-box ${done?"checked":""}`} onClick={(e) => toggleCheck(checkKey, e)}>
+                        {done && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, color: done?"#555":"#e8e8e0", marginBottom: 2 }}>
+                          {ex.nombre}
+                          {currentWeight && <span style={{ marginLeft: 8, fontSize: 10, color: "#ff3d00", fontWeight: 500 }}>· {currentWeight} kg</span>}
+                        </div>
+                        {ex.nota && <div style={{ fontSize: 10, color: "#444", letterSpacing: "0.04em" }}>↳ {ex.nota}</div>}
+                      </div>
+                      <div style={{ fontSize: 13, color: "#ff3d00", textAlign: "center" }}>{ex.series}</div>
+                      <div style={{ fontSize: 13, color: "#e8e8e0", textAlign: "center" }}>{ex.reps}</div>
+                      <div className="hide-mobile" style={{ fontSize: 11, color: "#555", textAlign: "center" }}>{ex.descanso}</div>
+                      <div className={`expand-btn ${isOpen?"open":""}`}>▶</div>
+                    </div>
+                    {isOpen && (
+                      <div className="weight-panel">
+                        {WEEKS.map((w, wi) => (
+                          <div key={wi} className="weight-cell">
+                            <div className="weight-label">{w}</div>
+                            <input className="weight-input" type="number" placeholder="—"
+                              value={weights[exKey]?.[wi]||""}
+                              onChange={(e) => handleWeight(exKey, wi, e.target.value)}
+                              onClick={(e) => e.stopPropagation()} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 32 }}>
+              <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", padding: "20px" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.2em", color: "#ff3d00", marginBottom: 14 }}>NUTRICIÓN</div>
+                {plan.nutricion.map((n,i)=>(
+                  <div key={i} style={{ fontSize: 11, color: "#888", marginBottom: 8, paddingLeft: 10, borderLeft: "1px solid #222", lineHeight: 1.5 }}>{n}</div>
+                ))}
+              </div>
+              <div style={{ background: "#0d0d0d", border: "1px solid #1a1a1a", padding: "20px" }}>
+                <div style={{ fontSize: 10, letterSpacing: "0.2em", color: "#ff3d00", marginBottom: 14 }}>PROGRESIÓN 8 SEMANAS</div>
+                {plan.progresion.map((p,i)=>(
+                  <div key={i} style={{ fontSize: 11, color: "#888", marginBottom: 8, paddingLeft: 10, borderLeft: "1px solid #222", lineHeight: 1.5 }}>{p}</div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<TrainingPlan />);
+  </script>
+</body>
+</html>
