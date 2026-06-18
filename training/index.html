@@ -166,6 +166,7 @@
         sbLoad().then(sbData => {
           if (sbData === null) {
             setSyncStatus('offline');
+            sbLoad().then(sbData => {
           } else {
             // Supabase data wins on conflict
             const merged = { ...local, ...sbData };
