@@ -156,6 +156,7 @@
       const [activeWeek, setActiveWeek] = useState(0);
       const [expandedEx, setExpandedEx] = useState(null);
       const [syncStatus, setSyncStatus] = useState('loading'); // loading | online | offline
+      const [syncMsg, setSyncMsg] = useState('');
       const debounceRef = useRef({});
 
       // Load weights on mount: localStorage first (instant), then Supabase (sync)
@@ -194,6 +195,34 @@
             sbDelete(exKey, weekIdx);
           }
         }, 700);
+      };
+
+      // Force-push ALL localStorage weights to Supabase (use from mobile to recover sync)
+      const forceSyncToSupabase = async () => {
+        setSyncMsg('Subiendo...');
+        const local = JSON.parse(localStorage.getItem('weights_sb') || '{}');
+        const entries = [];
+        Object.entries(local).forEach(([exKey, weeks]) => {
+          Object.entries(weeks).forEach(([weekIdx, value]) => {
+            if (value) entries.push({ exKey, weekIdx, value });
+          });
+        });
+        if (entries.length === 0) { setSyncMsg('Sin datos locales'); setTimeout(() => setSyncMsg(''), 3000); return; }
+        let ok = 0;
+        for (const { exKey, weekIdx, value } of entries) {
+          try {
+            const key = `${exKey}-w${weekIdx}`;
+            await fetch(`${SB_URL}/weights`, {
+              method: 'POST',
+              headers: { ...SB_H, 'Prefer': 'resolution=merge-duplicates' },
+              body: JSON.stringify({ key, value: String(value), updated_at: new Date().toISOString() })
+            });
+            ok++;
+          } catch(e) {}
+        }
+        setSyncStatus('online');
+        setSyncMsg(`✓ ${ok} pesos subidos`);
+        setTimeout(() => setSyncMsg(''), 4000);
       };
 
       const toggleCheck = (key, e) => {
@@ -244,9 +273,21 @@
             <div style={{ maxWidth: 860, margin: "0 auto" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <div style={{ fontSize: 11, letterSpacing: "0.2em", color: "#ff3d00" }}>PLAN DE ENTRENAMIENTO — 8 SEMANAS</div>
-                <div title={syncDot.title} style={{ fontSize: 10, color: syncDot.color, letterSpacing: "0.1em", display: "flex", alignItems: "center", gap: 5 }}>
-                  <span style={{ fontSize: 8 }}>{syncDot.label}</span>
-                  <span style={{ color: "#444" }}>{syncStatus === 'loading' ? 'cargando' : syncStatus === 'online' ? 'sincronizado' : 'sin conexión'}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  {syncMsg && <span style={{ fontSize: 10, color: "#00e5a3", letterSpacing: "0.05em" }}>{syncMsg}</span>}
+                  <button onClick={forceSyncToSupabase} title="Forzar subida de todos los pesos locales a Supabase" style={{
+                    background: "transparent", border: "1px solid #333", color: "#555",
+                    padding: "4px 10px", cursor: "pointer", fontFamily: "'DM Mono',monospace",
+                    fontSize: 9, letterSpacing: "0.1em", transition: "all 0.2s"
+                  }}
+                  onMouseOver={e => { e.target.style.borderColor='#00e5a3'; e.target.style.color='#00e5a3'; }}
+                  onMouseOut={e => { e.target.style.borderColor='#333'; e.target.style.color='#555'; }}>
+                    ↑ SYNC
+                  </button>
+                  <div title={syncDot.title} style={{ fontSize: 10, color: syncDot.color, letterSpacing: "0.1em", display: "flex", alignItems: "center", gap: 5 }}>
+                    <span style={{ fontSize: 8 }}>{syncDot.label}</span>
+                    <span style={{ color: "#444" }}>{syncStatus === 'loading' ? 'cargando' : syncStatus === 'online' ? 'sincronizado' : 'sin conexión'}</span>
+                  </div>
                 </div>
               </div>
               <h1 style={{ fontFamily: "'Bebas Neue',sans-serif", fontSize: "clamp(36px,8vw,64px)", letterSpacing: "0.05em", lineHeight: 1, color: "#f0f0e8", marginBottom: 12 }}>ATHLETIC RECOMP</h1>
